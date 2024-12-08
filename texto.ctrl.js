@@ -30,6 +30,21 @@ export const getTextoById = async (req, res) => {
       return res.status(404).json({ error: "Texto no encontrado." });
     }
 
+    // Obtener el tiempo actual y el tiempo de creación del documento
+    const now = new Date();
+    const createdAt = new Date(textDB.createdAt);
+
+    // Calcular la diferencia en horas
+    const diffInMs = now - createdAt; // Diferencia en milisegundos
+    const diffInHours = diffInMs / (1000 * 60 * 60); // Convertir a horas
+
+    // Verificar si han pasado más de 24 horas
+    if (diffInHours > 24) {
+      return res.status(403).json({
+        error: "El contenido no está disponible. Han pasado más de 24 horas.",
+      });
+    }
+
     // Intentar parsear el contenido a JSON
     let parsedContent;
     try {
@@ -44,6 +59,7 @@ export const getTextoById = async (req, res) => {
     res.json({
       message: "Texto recuperado con éxito",
       data: parsedContent,
+      createdAt: createdAt.toISOString(),
     });
   } catch (error) {
     console.error("Error al obtener texto:", error);
@@ -52,6 +68,7 @@ export const getTextoById = async (req, res) => {
     });
   }
 };
+
 
 export const createTexto = async (req, res) => {
   try {
